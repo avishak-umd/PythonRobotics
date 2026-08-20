@@ -1,0 +1,96 @@
+# DyPyBench #2 (PythonRobotics) — run the same test command under DynaPyt and
+# CIMonitor, upload each tool's logs as workflow artifacts for manual analysis.
+
+name: DynaPyt vs CIMonitor
+
+on: [push, workflow_dispatch]
+
+jobs:
+  dynapyt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements/requirements.txt
+          pip install pytest pytest-timeout
+
+      - name: Setup DynaPyt
+        uses: clonedSemicolon/seytup-dynapyt@master
+        with:
+          targets: |
+            directory:AerialNavigation
+            directory:ArmNavigation
+            directory:Bipedal
+            directory:InvertedPendulum
+            directory:Localization
+            directory:Mapping
+            directory:MissionPlanning
+            directory:PathPlanning
+            directory:PathTracking
+            directory:SLAM
+            directory:utils
+          analysis: "dynapyt.analyses.CallGraph.CallGraph"
+
+      - name: Run test suite
+        timeout-minutes: 300
+        run: |
+          pytest --timeout=300 --import-mode=importlib tests 2>&1 | tee pytest-output.log || true
+
+      - name: Upload test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-log-pythonrobotics-dynapyt
+          path: pytest-output.log
+
+      - name: Collect & upload DynaPyt traces
+        if: always()
+        uses: clonedSemicolon/seytup-dynapyt@master
+        with:
+          mode: collect
+          artifact-name: dynapyt-pythonrobotics-${{ github.run_id }}
+
+  cimonitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - uses: JavidDitty/setup-cintent@64faaac1333aabc2e0a00af6109b48ec4d8071bf
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements/requirements.txt
+          pip install pytest pytest-timeout
+
+      - name: Run test suite
+        timeout-minutes: 90
+        run: |
+          pytest --timeout=300 --import-mode=importlib tests 2>&1 | tee pytest-output.log || true
+
+      - name: Upload test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-log-pythonrobotics-cimonitor
+          path: pytest-output.log
+
+      - name: Upload CIntent Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.CINTENT_ARTIFACT_NAME }}
+          path: ${{ env.CINTENT_LOGS }}
