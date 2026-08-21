@@ -23,7 +23,7 @@ jobs:
           pip install pytest pytest-timeout
 
       - name: Setup DynaPyt
-        uses: clonedSemicolon/seytup-dynapyt@master
+        uses: avishak-umd/seytup-dynapyt@master
         with:
           targets: |
             directory:AerialNavigation
@@ -42,7 +42,7 @@ jobs:
       - name: Run test suite
         timeout-minutes: 300
         run: |
-          timeout -s INT -k 120 280m pytest --timeout=300 --import-mode=importlib tests 2>&1 | tee pytest-output.log || true
+          timeout -s INT -k 1200 260m pytest --timeout=300 --import-mode=importlib tests 2>&1 | tee pytest-output.log || true
 
       - name: Upload test log
         if: always()
@@ -53,7 +53,7 @@ jobs:
 
       - name: Collect & upload DynaPyt traces
         if: always()
-        uses: clonedSemicolon/seytup-dynapyt@master
+        uses: avishak-umd/seytup-dynapyt@master
         with:
           mode: collect
           artifact-name: dynapyt-pythonrobotics-${{ github.run_id }}
@@ -79,7 +79,7 @@ jobs:
       - name: Run test suite
         timeout-minutes: 300
         run: |
-          timeout -s INT -k 120 280m pytest --timeout=300 --import-mode=importlib tests 2>&1 | tee pytest-output.log || true
+          timeout -s INT -k 1200 260m pytest --timeout=300 --import-mode=importlib tests 2>&1 | tee pytest-output.log || true
 
       - name: Upload test log
         if: always()
