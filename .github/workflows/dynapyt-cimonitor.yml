@@ -8,7 +8,7 @@ on: [push, workflow_dispatch]
 jobs:
   dynapyt:
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
 
@@ -40,9 +40,9 @@ jobs:
           analysis: "dynapyt.analyses.CallGraph.CallGraph"
 
       - name: Run test suite
-        timeout-minutes: 300
+        timeout-minutes: 355
         run: |
-          timeout -s INT -k 1200 260m pytest --timeout=300 --import-mode=importlib tests 2>&1 | tee pytest-output.log || true
+          timeout -s INT -k 5m 345m pytest --timeout=300 --import-mode=importlib tests 2>&1 | tee pytest-output.log || true
 
       - name: Upload test log
         if: always()
