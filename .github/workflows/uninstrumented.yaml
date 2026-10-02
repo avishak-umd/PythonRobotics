@@ -1,0 +1,25 @@
+name: Uninstrumented
+
+on: [push, workflow_dispatch]
+
+jobs:
+  dynapyt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements/requirements.txt
+          pip install pytest pytest-timeout
+
+      - name: Run test suite
+        timeout-minutes: 350
+        run: |
+          timeout -s INT -k 20m 325m pytest --timeout=300 --import-mode=importlib tests 2>&1 | tee pytest-output.log || true
